@@ -44,5 +44,5 @@ git clone [https://github.com/abolfazlghasemi83/Taskmaster.git](https://github.c
 cd Taskmaster
 # Open index.html in your browser
 
-📜 <b>License</b>
+ License📜
  This project is open-source and available under the terms of the MIT License. Copyright (c) 2025 Abolfazl Ghasemi
