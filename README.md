@@ -39,8 +39,10 @@ The entire application is designed for extreme efficiency: the full codebase (HT
 ### License📜
  This project is open-source and available under the terms of the MIT License. Copyright (c) 2025 Abolfazl Ghasemi
  
+### Installation (For developers)
+
+Since this is a single-page app, you can clone the repository and open the main file directly in your browser:
+
 ```bash
 git clone [https://github.com/abolfazlghasemi83/Taskmaster.git](https://github.com/abolfazlghasemi83/Taskmaster.git)
 cd Taskmaster
-# Open index.html in your browser
- 
