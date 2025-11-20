@@ -44,5 +44,4 @@ The entire application is designed for extreme efficiency: the full codebase (HT
 Since this is a single-page app, you can clone the repository and open the main file directly in your browser:
 
 ```bash
-git clone [https://github.com/abolfazlghasemi83/Taskmaster.git](https://github.com/abolfazlghasemi83/Taskmaster.git)
-cd Taskmaster
+git clone https://github.com/abolfazlghasemi83/Taskmaster.git
