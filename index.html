@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Taskmaster | کارستان</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-day: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
+      --bg-night: linear-gradient(135deg, #1e272e 0%, #37475f 100%); 
+      --text-day: #2d3436;
+      --text-night: #eceff1;
+      --glass-day: rgba(255, 255, 255, 0.85);
+      --glass-night: rgba(30, 39, 46, 0.85);
+      --primary: #0984e3;
+      --urgent: #d63030;
+      --warning: #e67e22;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      --font-fa: 'Vazirmatn', Tahoma, sans-serif; 
+    }
+
+    body {
+      margin: 0; padding: 0; 
+      font-family: var(--font-fa); 
+      background: var(--bg-day); color: var(--text-day);
+      height: 100vh; display: flex; flex-direction: column;
+      transition: 0.3s;
+    }
+    body.dark-mode { background: var(--bg-night); color: var(--text-night); }
+
+    /* Glassmorphism Class */
+    .glass {
+      background: var(--glass-day);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 16px; box-shadow: var(--shadow);
+    }
+    body.dark-mode .glass { background: var(--glass-night); border-color: rgba(255,255,255,0.1); }
+
+    /* Liquid Glass Header */
+    .header.glass {
+        background: rgba(100, 181, 246, 0.7); 
+        backdrop-filter: blur(15px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        color: white; 
+    }
+    body.dark-mode .header.glass {
+        background: rgba(52, 73, 94, 0.7); 
+        color: var(--text-night);
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px 20px; max-width: 800px; margin: 15px auto; width: 90%;
+    }
+    
+    #appTitle {
+        font-family: var(--font-fa); 
+        font-weight: 900 !important; 
+        font-size: 1.2rem;
+    }
+    
+    .controls button {
+      background: rgba(255,255,255,0.3); border: none; padding: 8px 12px;
+      border-radius: 10px; cursor: pointer; font-weight: bold; 
+      color: inherit; 
+      transition: 0.2s;
+    }
+    .controls button:hover {
+        background: rgba(255,255,255,0.5);
+    }
+    
+    /* Search Bar */
+    .search-bar {
+        max-width: 800px; margin: 0 auto 20px auto; width: 90%;
+    }
+    #searchInput, input, select { 
+        font-family: inherit; 
+        font-size: 1rem;
+    }
+    #searchInput {
+        padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1);
+        background: var(--glass-day); font-family: inherit; width: 100%; box-sizing: border-box;
+        transition: 0.3s;
+    }
+    body.dark-mode #searchInput {
+        background: var(--glass-night);
+        color: var(--text-night);
+        border-color: rgba(255,255,255,0.1);
+    }
+    
+
+    /* Filter Bar */
+    .filters {
+      display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;
+    }
+    .filter-btn {
+      font-family: var(--font-fa); 
+      padding: 8px 16px; border-radius: 20px; border: none; cursor: pointer;
+      background: rgba(0,0,0,0.05); font-weight: bold; color: inherit;
+    }
+    .filter-btn.active { background: var(--primary); color: white; }
+
+    /* Task List */
+    #taskList {
+      list-style: none; padding: 0; margin: 0 auto;
+      max-width: 800px; width: 95%; padding-bottom: 100px; 
+      display: flex; flex-direction: column; 
+      gap: 8px; 
+    }
+    
+    li.task {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px; position: relative; transition: transform 0.2s;
+    }
+    li.task:hover { transform: translateY(-3px); }
+    li.task.done { opacity: 0.6; filter: grayscale(0.8); }
+    li.task.done .task-title { text-decoration: line-through; }
+    
+    /* 💡 استایل‌های جدید برای Drag-and-Drop */
+    li.task[draggable="true"]:hover {
+        cursor: grab;
+    }
+    li.task[draggable="true"]:active {
+        cursor: grabbing;
+    }
+    .task.drag-over-top {
+        border-top: 3px solid var(--primary);
+    }
+    .task.drag-over-bottom {
+        border-bottom: 3px solid var(--primary);
+    }
+
+    .task-content { flex: 1; }
+    .task-title { 
+        font-family: var(--font-fa); 
+        font-size: 1.1rem; 
+        font-weight: 800; 
+        display: block; 
+        margin-bottom: 5px; 
+    }
+    .task-meta { font-size: 0.85rem; opacity: 0.7; display: flex; gap: 10px; flex-wrap: wrap; }
+    
+    /* Category Specific Style */
+    .cat-wishlist { 
+        color: #9b59b6; 
+        font-weight: bold;
+    }
+
+    .actions { display: flex; gap: 8px; }
+    .btn-icon {
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      cursor: pointer; display: grid; place-items: center; color: white;
+      font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-done { background: #00b894; }
+    .btn-undo { background: #fdcb6e; }
+    .btn-edit { background: #0984e3; }
+    .btn-del { background: #d63030; }
+
+    /* Smart Alerts */
+    .status-badge {
+      position: absolute; top: -10px; right: 20px;
+      padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: popIn 0.3s ease;
+    }
+    html[dir="ltr"] .status-badge { right: auto; left: 20px; }
+
+    .badge-today { background: var(--warning); }
+    .badge-late { background: var(--urgent); animation: pulse 1.5s infinite; }
+
+    /* FAB (Floating Action Button) */
+    .fab {
+      position: fixed; bottom: 30px; 
+      width: 65px; height: 65px; border-radius: 50%;
+      background: var(--primary); color: white; border: none;
+      font-size: 30px; cursor: pointer;
+      box-shadow: 0 10px 20px rgba(9, 132, 227, 0.4);
+      display: grid; place-items: center; transition: transform 0.2s;
+      z-index: 100;
+    }
+    .fab:hover { transform: scale(1.1); }
+    
+    /* FAB Positioning based on Language */
+    html[dir="rtl"] .fab { right: 30px; left: auto; } 
+    html[dir="ltr"] .fab { left: 30px; right: auto; } 
+
+    /* Modal */
+    .modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      align-items: center; justify-content: center; z-index: 200;
+    }
+    .modal-content {
+      width: 90%; max-width: 450px; padding: 25px;
+      display: flex; flex-direction: column; gap: 15px;
+    }
+    input, select {
+      padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(255,255,255,0.8); font-family: inherit; width: 100%; box-sizing: border-box;
+    }
+    /* 💡 استایل برای راهنمای فیلدها */
+    .field-desc {
+        font-size: 0.75rem; 
+        opacity: 0.6; 
+        margin-top: -10px; 
+        margin-bottom: 5px;
+    }
+    .date-row { display: flex; gap: 5px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+    
+    footer { 
+        font-family: var(--font-fa);
+        text-align: center; margin-top: auto; padding: 20px; 
+        font-size: 0.8rem; opacity: 0.7; 
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header glass">
+    <div id="appTitle">Taskmaster | کارستان</div>
+    <div class="controls">
+      <button id="langBtn">FA / EN</button>
+      <button id="modeBtn">🌗</button>
+    </div>
+  </div>
+
+  <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="جستجو در کارها..." oninput="render()">
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all" id="fAll">همه</button>
+    <button class="filter-btn" data-filter="active" id="fActive">کار های انجام نشده</button>
+    <button class="filter-btn" data-filter="completed" id="fDone">کار های انجام شده</button>
+  </div>
+
+  <ul id="taskList"></ul>
+
+  <div class="modal" id="taskModal">
+    <div class="modal-content glass">
+      <h3 id="modalTitle" style="margin:0">کار جدید</h3>
+      
+      <label id="lblTitle" style="font-size:0.8rem; font-weight:bold; margin-top:0;"></label>
+      <input type="text" id="inpTitle" placeholder="...">
+      <span class="field-desc" id="descTitle"></span>
+      
+      <label id="lblCat" style="font-size:0.8rem; font-weight:bold; margin-top:5px;"></label>
+      <select id="inpCat"></select>
+      <span class="field-desc" id="descCat"></span>
+
+      <div id="grpDateEn" style="display:none">
+        <label id="lblDateEn" style="font-size:0.8rem; font-weight:bold"></label>
+        <div class="date-row">
+            <select id="gYear" style="flex:1"></select>
+            <select id="gMonth" style="flex:1"></select>
+            <select id="gDay" style="flex:1"></select>
+        </div>
+        <span class="field-desc" id="descDateEn"></span>
+      </div>
+
+      <div id="grpDateFa">
+        <label id="lblDateFa" style="font-size:0.8rem; font-weight:bold"></label>
+        <div class="date-row">
+          <select id="jYear" style="flex:1"></select>
+          <select id="jMonth" style="flex:1"></select>
+          <select id="jDay" style="flex:1"></select>
+        </div>
+        <span class="field-desc" id="descDateFa"></span>
+      </div>
+      
+      <label id="lblTime" style="font-size:0.8rem; font-weight:bold; margin-top:5px;"></label>
+      <input type="time" id="inpTime">
+      <span class="field-desc" id="descTime"></span>
+
+      <div class="modal-actions">
+        <button class="filter-btn" id="btnCancel">لغو</button>
+        <button class="filter-btn active" id="btnSave">ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab" id="fabAdd">➕</button>
+
+  <footer id="footer">Created with ❤️ by Abolfazl Ghasemi</footer>
+
+<script>
+  let lang = localStorage.getItem("lang") || "fa";
+  
+  // 💡 اضافه کردن فیلد order به تسک‌های موجود هنگام بارگذاری
+  let tasks = JSON.parse(localStorage.getItem("tasks") || "[]").map((task, index) => {
+      if (task.order === undefined) {
+          task.order = index; 
+      }
+      return task;
+  });
+
+  let filter = "all";
+  let editId = null;
+  let draggedItem = null; // برای نگهداری آیتم در حال کشیدن
+
+  const texts = {
+    fa: {
+      title: "Taskmaster | کارستان",
+      all: "همه", active: "کار های انجام نشده", done: "کار های انجام شده",
+      cats: { work: "کاری", personal: "شخصی", urgent: "فوری", wishlist: "آرزو ✨" },
+      modalAdd: "افزودن کار", modalEdit: "ویرایش کار",
+      cancel: "لغو", save: "ذخیره",
+      placeholder: "عنوان کار...",
+      searchPlaceholder: "جستجو در کارها...",
+      alertToday: "⚠️ همین الان انجامش بده!",
+      alertLate: "🔥 دیر شد! بجنب!",
+      confirm: "حذف بشه؟",
+      months: ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"],
+      footer: "ساخته شده با ❤️ توسط ابوالفضل قاسمی",
+      alertEmptyTitle: "لطفاً عنوان کار را وارد کنید.",
+      year: "سال", month: "ماه", day: "روز",
+      dateLabel: "تاریخ", 
+      fieldDesc: {
+        title: "عنوان | نام کوتاه و مشخص برای وظیفه",
+        cat: "دسته‌بندی | نوع وظیفه (کاری، شخصی و...)",
+        date: "تاریخ موعد | تاریخی که کار باید تا آن زمان تمام شود (اختیاری)",
+        time: "زمان | ساعت دقیق برای یادآوری (اختیاری)",
+      }
+    },
+    en: {
+      title: "Taskmaster",
+      all: "All", active: "Active", done: "Completed",
+      cats: { work: "Work", personal: "Personal", urgent: "Urgent", wishlist: "Wishlist ✨" },
+      modalAdd: "New Task", modalEdit: "Edit Task",
+      cancel: "Cancel", save: "Save",
+      placeholder: "Task title...",
+      searchPlaceholder: "Search tasks...",
+      alertToday: "⚠️ Do it right NOW!", 
+      alertLate: "🔥 Too late! Do it now!",
+      confirm: "Delete?",
+      months: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+      footer: "Created with ❤️ by Abolfazl Ghasemi",
+      alertEmptyTitle: "Please enter a task title.",
+      year: "Year", month: "Month", day: "Day",
+      dateLabel: "Due Date",
+      fieldDesc: {
+        title: "Title | Short and descriptive name for the task",
+        cat: "Category | Category of the task (Work, Personal, etc.)",
+        date: "Due Date | The date the task should be finished by (optional)",
+        time: "Time | Specific time for a reminder (optional)",
+      }
+    }
+  };
+
+  /* --- CONVERTERS & DATE HELPERS (Jalali-Gregorian Conversion Logic - Unchanged) --- */
+  // ... (Conversion functions here - same as indexV22.html) ... 
+  function isGregorianLeap(year) {
+      return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  }
+  function isJalaliLeap(jy) {
+      const r = jy % 33;
+      return r === 1 || r === 5 || r === 9 || r === 13 || r === 17 || r === 22 || r === 26 || r === 30;
+  }
+  
+  function toGregorian_aux(jy, jm, jd) {
+      jy = parseInt(jy); jm = parseInt(jm); jd = parseInt(jd);
+      
+      if (isNaN(jy) || isNaN(jm) || isNaN(jd) || jm < 1 || jm > 12) return [0, 0, 0];
+      
+      const JALALI_DAYS_IN_MONTH = [0, 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+      if (isJalaliLeap(jy)) JALALI_DAYS_IN_MONTH[12] = 30; 
+
+      const GREGORIAN_EPOCH_OFFSET = 79; 
+      
+      let j_day_no = jd;
+      
+      for (let i = 1; i < jm; i++) {
+          j_day_no += JALALI_DAYS_IN_MONTH[i];
+      }
+
+      let gy = jy + 621;
+      let g_day_no = j_day_no + GREGORIAN_EPOCH_OFFSET; 
+      
+      const GREGORIAN_DAYS_IN_MONTH_TEMP = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      while (g_day_no > (isGregorianLeap(gy) ? 366 : 365)) {
+          g_day_no -= (isGregorianLeap(gy) ? 366 : 365);
+          gy++;
+      }
+      while (g_day_no <= 0) {
+          gy--;
+          g_day_no += (isGregorianLeap(gy) ? 366 : 365);
+      }
+
+      const GREGORIAN_DAYS_IN_MONTH = [...GREGORIAN_DAYS_IN_MONTH_TEMP]; 
+      if (isGregorianLeap(gy)) GREGORIAN_DAYS_IN_MONTH[2] = 29;
+      
+      let gm = 1;
+      let gd = g_day_no;
+      for (let i = 1; i <= 12; i++) {
+          if (gd <= GREGORIAN_DAYS_IN_MONTH[i]) break; 
+          gd -= GREGORIAN_DAYS_IN_MONTH[i];
+          gm++;
+      }
+      
+      return [gy, gm, gd];
+  }
+  
+  function toJalali(g_y, g_m, g_d) {
+      g_y = parseInt(g_y); g_m = parseInt(g_m); g_d = parseInt(g_d);
+      
+      if (isNaN(g_y) || isNaN(g_m) || isNaN(g_d) || g_m < 1 || g_m > 12) {
+          return [0, 0, 0];
+      }
+
+      const GREGORIAN_DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      const JALALI_EPOCH_OFFSET = 79;
+      
+      if (isGregorianLeap(g_y)) GREGORIAN_DAYS_IN_MONTH[2] = 29;
+
+      let g_day_no = 0;
+      for (let i = 1; i < g_m; i++) g_day_no += GREGORIAN_DAYS_IN_MONTH[i];
+      g_day_no += g_d;
+
+      let jy = g_y - 621;
+      let j_day_no = g_day_no - JALALI_EPOCH_OFFSET; 
+      
+      while (j_day_no <= 0) {
+          jy--;
+          j_day_no += isJalaliLeap(jy) ? 366 : 365;
+      }
+      while (j_day_no > (isJalaliLeap(jy) ? 366 : 365)) { 
+          j_day_no -= (isJalaliLeap(jy) ? 366 : 365);
+          jy++;
+      }
+      
+      const JALALI_DAYS_IN_MONTH = [0, 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+      if (isJalaliLeap(jy)) JALALI_DAYS_IN_MONTH[12] = 30;
+      
+      let jm = 1;
+      let jd = j_day_no;
+      for (let i = 1; i <= 12; i++) {
+          if (jd <= JALALI_DAYS_IN_MONTH[i]) break;
+          jd -= JALALI_DAYS_IN_MONTH[i];
+          jm++;
+      }
+      
+      return [jy, jm, jd];
+  }
+  
+  function getTodayISO() {
+      const d = new Date();
+      return d.toISOString().split("T")[0]; 
+  }
+  
+  function getJalaliMonthDays(jYear, jMonth) {
+      if (jMonth >= 1 && jMonth <= 6) return 31;
+      if (jMonth >= 7 && jMonth <= 11) return 30;
+      if (jMonth === 12) return isJalaliLeap(jYear) ? 30 : 29;
+      return 31; 
+  }
+  
+  function getGregorianMonthDays(gYear, gMonth) {
+      if (gMonth === 2) return isGregorianLeap(gYear) ? 29 : 28;
+      if ([4, 6, 9, 11].includes(gMonth)) return 30;
+      return 31;
+  }
+  
+  /* --- Gregorian/Jalali Synchronization (Unchanged) --- */
+
+  function updateJalaliFromGregorian() {
+      const gY = document.getElementById("gYear").value.trim();
+      const gM = document.getElementById("gMonth").value.trim();
+      const gD = document.getElementById("gDay").value.trim();
+      
+      const jYSel = document.getElementById("jYear");
+      const jMSel = document.getElementById("jMonth");
+      const jDSel = document.getElementById("jDay");
+      
+      if (!gY || !gM || !gD || isNaN(parseInt(gY))) {
+          jYSel.value = jMSel.value = jDSel.value = '';
+          updateJalaliDays(false);
+          return;
+      }
+      
+      try {
+          const [jY, jM, jD] = toJalali(parseInt(gY), parseInt(gM), parseInt(gD));
+          
+          jYSel.value = jY;
+          jMSel.value = jM;
+          
+          updateJalaliDays(false);
+          jDSel.value = jD;
+          
+      } catch(e) {
+          jYSel.value = jMSel.value = jDSel.value = '';
+          updateJalaliDays(false);
+      }
+  }
+
+  function updateGregorianDays(shouldUpdateJalali = true) {
+      const gYSel = document.getElementById("gYear");
+      const gMSel = document.getElementById("gMonth");
+      const gDSel = document.getElementById("gDay");
+
+      const selectedYear = parseInt(gYSel.value);
+      const selectedMonth = parseInt(gMSel.value);
+      
+      const currentDayValue = gDSel.value; 
+      let currentDayNum = parseInt(currentDayValue); 
+
+      if (isNaN(selectedYear) || isNaN(selectedMonth) || selectedMonth < 1 || selectedMonth > 12) {
+          gDSel.innerHTML = `<option value="">${texts.en.day}</option>`;
+          if(shouldUpdateJalali) updateJalaliFromGregorian();
+          return; 
+      }
+
+      const daysInMonth = getGregorianMonthDays(selectedYear, selectedMonth);
+
+      gDSel.innerHTML = "";
+      gDSel.innerHTML += `<option value="">${texts.en.day}</option>`; 
+      for(let i=1; i<=daysInMonth; i++) {
+          gDSel.innerHTML += `<option value="${i}">${i}</option>`;
+      }
+      
+      if (currentDayValue === '') {
+           gDSel.value = '';
+      } else if (isNaN(currentDayNum) || currentDayNum < 1) {
+          gDSel.value = '';
+      } else if (currentDayNum > daysInMonth) {
+          gDSel.value = daysInMonth;
+      } else {
+          gDSel.value = currentDayNum;
+      }
+      
+      if(shouldUpdateJalali) updateJalaliFromGregorian();
+  }
+  
+  function updateGregorianFromJalali(shouldUpdateGregorianDays = true) {
+      const ySel = document.getElementById("jYear");
+      const mSel = document.getElementById("jMonth");
+      const dSel = document.getElementById("jDay");
+      
+      const gYSel = document.getElementById("gYear");
+      const gMSel = document.getElementById("gMonth");
+      const gDSel = document.getElementById("gDay");
+      
+      const y = ySel.value.trim();
+      const m = mSel.value.trim();
+      const d = dSel.value.trim();
+      
+      if (!y || !m || !d || isNaN(parseInt(y))) {
+          gYSel.value = gMSel.value = gDSel.value = '';
+          if(shouldUpdateGregorianDays) updateGregorianDays(false);
+          return;
+      }
+      
+      try {
+        const [gY, gM, gD] = toGregorian_aux(y, m, d);
+        
+        gYSel.value = gY;
+        gMSel.value = gM;
+        
+        if(shouldUpdateGregorianDays) updateGregorianDays(false); 
+        gDSel.value = gD;
+
+      } catch (e) {
+        gYSel.value = gMSel.value = gDSel.value = '';
+        if(shouldUpdateGregorianDays) updateGregorianDays(false);
+      }
+  }
+
+  function updateJalaliDays(shouldUpdateGregorian = true) {
+      const ySel = document.getElementById("jYear");
+      const mSel = document.getElementById("jMonth");
+      const dSel = document.getElementById("jDay");
+
+      const selectedYear = parseInt(ySel.value);
+      const selectedMonth = parseInt(mSel.value);
+      
+      const currentDayValue = dSel.value; 
+      let currentDayNum = parseInt(currentDayValue); 
+
+      if (isNaN(selectedYear) || isNaN(selectedMonth) || selectedMonth < 1 || selectedMonth > 12) {
+          dSel.innerHTML = `<option value="">${texts.fa.day}</option>`;
+          if(shouldUpdateGregorian) updateGregorianFromJalali(true);
+          return; 
+      }
+
+      const daysInMonth = getJalaliMonthDays(selectedYear, selectedMonth);
+
+      dSel.innerHTML = "";
+      dSel.innerHTML += `<option value="">${texts.fa.day}</option>`; 
+      for(let i=1; i<=daysInMonth; i++) {
+          dSel.innerHTML += `<option value="${i}">${i}</option>`;
+      }
+      
+      if (currentDayValue === '') {
+           dSel.value = '';
+      } else if (isNaN(currentDayNum) || currentDayNum < 1) {
+          dSel.value = '';
+      } else if (currentDayNum > daysInMonth) {
+          dSel.value = daysInMonth;
+      } else {
+          dSel.value = currentDayNum;
+      }
+      
+      if(shouldUpdateGregorian) updateGregorianFromJalali(true);
+  }
+
+  /* --- DRAG & DROP LOGIC --- */
+
+  function handleDragStart(e) {
+    if (e.target.classList.contains('done')) {
+        e.preventDefault();
+        return;
+    }
+    draggedItem = this;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.id); 
+
+    // Add class for visual feedback
+    setTimeout(() => this.style.opacity = '0.4', 0);
+  }
+
+  function handleDragEnd(e) {
+      this.style.opacity = '1';
+      draggedItem = null;
+      // Remove all highlight classes
+      document.querySelectorAll('.task').forEach(t => t.classList.remove('drag-over-top', 'drag-over-bottom'));
+  }
+
+  function handleDragOver(e) {
+      e.preventDefault(); // Necessary to allow drop
+      const targetTaskLi = e.target.closest('.task');
+      if (!targetTaskLi || targetTaskLi === draggedItem || targetTaskLi.classList.contains('done')) return;
+      
+      // Determine whether to place above or below based on mouse position
+      const rect = targetTaskLi.getBoundingClientRect();
+      const offset = e.clientY - rect.top;
+      const isBefore = offset < rect.height / 2;
+
+      document.querySelectorAll('.task').forEach(t => t.classList.remove('drag-over-top', 'drag-over-bottom'));
+      if (isBefore) {
+          targetTaskLi.classList.add('drag-over-top');
+      } else {
+          targetTaskLi.classList.add('drag-over-bottom');
+      }
+      e.dataTransfer.dropEffect = 'move';
+  }
+
+  function handleDrop(e) {
+      e.preventDefault();
+      
+      const dropTargetLi = e.target.closest('.task');
+      document.querySelectorAll('.task').forEach(t => t.classList.remove('drag-over-top', 'drag-over-bottom'));
+      
+      if (draggedItem && dropTargetLi && draggedItem !== dropTargetLi) {
+          const rect = dropTargetLi.getBoundingClientRect();
+          const offset = e.clientY - rect.top;
+          const isBefore = offset < rect.height / 2;
+          
+          const list = document.getElementById('taskList');
+          
+          // Reorder the DOM elements visually
+          if (isBefore) {
+              list.insertBefore(draggedItem, dropTargetLi);
+          } else {
+              list.insertBefore(draggedItem, dropTargetLi.nextSibling);
+          }
+
+          // 💡 Call function to update the order in the 'tasks' array and save
+          updateTaskOrder();
+      }
+  }
+
+  function updateTaskOrder() {
+      const taskList = document.getElementById("taskList");
+      // Get only the actively rendered tasks (which are now manually ordered)
+      const taskElements = Array.from(taskList.children).filter(el => el.classList.contains('task'));
+      const taskIdToOrderMap = {};
+      
+      // Map IDs of visible (and now reordered) tasks to their new index
+      taskElements.forEach((el, index) => {
+          const taskId = parseInt(el.dataset.id);
+          taskIdToOrderMap[taskId] = index;
+      });
+
+      // Update the 'order' property in the global tasks array
+      tasks = tasks.map(task => {
+          if (taskIdToOrderMap[task.id] !== undefined) {
+              // Set the new manual order
+              task.order = taskIdToOrderMap[task.id];
+          } else if (task.done) {
+              // Ensure done tasks also get a high order to stay at the bottom
+              task.order = tasks.length + task.id; 
+          }
+          return task;
+      });
+
+      // Save and re-render to ensure all list elements are consistent
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+      render(); 
+  }
+
+  function attachDragEventListeners() {
+      const list = document.getElementById('taskList');
+      const taskElements = list.querySelectorAll('.task');
+      
+      taskElements.forEach(task => {
+          if (task.getAttribute('draggable') === 'true') {
+              task.addEventListener('dragstart', handleDragStart);
+              task.addEventListener('dragend', handleDragEnd);
+          }
+          // The drop target listeners must be on all tasks (even non-draggable ones)
+          task.addEventListener('dragover', handleDragOver);
+          task.addEventListener('dragleave', (e) => e.target.closest('.task').classList.remove('drag-over-top', 'drag-over-bottom'));
+          task.addEventListener('drop', handleDrop);
+      });
+  }
+
+  /* --- CORE LOGIC --- */
+  
+  function updateFieldDescriptions(currentLang) {
+    const t = texts[currentLang];
+    
+    const updateField = (lblId, descId, textWithSeparator) => {
+        const parts = textWithSeparator.split('|').map(p => p.trim());
+        document.getElementById(lblId).innerText = parts[0] || '';
+        document.getElementById(descId).innerText = parts.length > 1 ? parts[1] : '';
+    };
+
+    updateField("lblTitle", "descTitle", t.fieldDesc.title);
+    updateField("lblCat", "descCat", t.fieldDesc.cat);
+    
+    updateField("lblDateFa", "descDateFa", t.fieldDesc.date);
+    updateField("lblDateEn", "descDateEn", t.fieldDesc.date);
+    
+    updateField("lblTime", "descTime", t.fieldDesc.time);
+  }
+
+
+  function initSelectors(editTask = null) {
+    const today = new Date();
+    const currentGYear = today.getFullYear();
+    
+    // 1. Jalali Selectors setup
+    const jYSel = document.getElementById("jYear");
+    const jMSel = document.getElementById("jMonth");
+    
+    const minFaYear = toJalali(currentGYear, today.getMonth() + 1, today.getDate())[0];
+    const maxFutureFaYear = minFaYear + 5; 
+    
+    if (jYSel.options.length <= 1 || parseInt(jYSel.options[1].value) !== minFaYear) { 
+        jYSel.innerHTML = `<option value="">${texts.fa.year}</option>`; 
+        for(let y = minFaYear; y <= maxFutureFaYear; y++) {
+          jYSel.innerHTML += `<option value="${y}">${y}</option>`;
+        }
+        
+        jMSel.innerHTML = `<option value="">${texts.fa.month}</option>`; 
+        for(let i=1; i<=12; i++) {
+            jMSel.innerHTML += `<option value="${i}">${texts.fa.months[i-1]}</option>`;
+        }
+    }
+    
+    // 2. Gregorian Selectors setup
+    const gYSel = document.getElementById("gYear");
+    const gMSel = document.getElementById("gMonth");
+    
+    const minGYear = currentGYear; 
+    const maxFutureGYear = currentGYear + 5;
+    
+    if (gYSel.options.length <= 1 || parseInt(gYSel.options[1].value) !== minGYear) {
+        gYSel.innerHTML = `<option value="">${texts.en.year}</option>`;
+        for(let y = minGYear; y <= maxFutureGYear; y++) {
+            gYSel.innerHTML += `<option value="${y}">${y}</option>`;
+        }
+        
+        gMSel.innerHTML = `<option value="">${texts.en.month}</option>`;
+        for(let i=1; i<=12; i++) {
+            gMSel.innerHTML += `<option value="${i}">${texts.en.months[i-1]}</option>`;
+        }
+    }
+
+    // 3. Set Initial Values or Edit Values
+    const selectors = ["jYear", "jMonth", "jDay", "gYear", "gMonth", "gDay"];
+    selectors.forEach(id => {
+        const sel = document.getElementById(id);
+        if(sel) sel.value = '';
+    });
+    
+    if (editTask && editTask.date) {
+        try {
+            const [gY, gM, gD] = editTask.date.split("-").map(Number);
+            const [jY, jM, jD] = toJalali(gY, gM, gD);
+            
+            jYSel.value = jY; jMSel.value = jM; 
+            gYSel.value = gY; gMSel.value = gM;
+            
+            updateJalaliDays(false); 
+            updateGregorianDays(false);
+
+            document.getElementById("jDay").value = jD;
+            document.getElementById("gDay").value = gD; 
+            
+        } catch(e) {
+             // If date is invalid, just clear
+        }
+    } 
+    
+    updateJalaliDays(false);
+    updateGregorianDays(false);
+  }
+
+
+  function render() {
+    const t = texts[lang];
+    document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+
+    document.getElementById("appTitle").innerText = t.title;
+    document.getElementById("fAll").innerText = t.all;
+    document.getElementById("fActive").innerText = t.active;
+    document.getElementById("fDone").innerText = t.done;
+    document.getElementById("btnCancel").innerText = t.cancel;
+    document.getElementById("btnSave").innerText = t.save;
+    document.getElementById("inpTitle").placeholder = t.placeholder;
+    document.getElementById("searchInput").placeholder = t.searchPlaceholder;
+    document.getElementById("footer").innerText = t.footer;
+    
+    updateFieldDescriptions(lang); 
+
+    // Fill Category
+    const catSel = document.getElementById("inpCat");
+    const oldVal = catSel.value;
+    catSel.innerHTML = Object.keys(t.cats).map(k => `<option value="${k}">${t.cats[k]}</option>`).join("");
+    if(oldVal) catSel.value = oldVal;
+
+    // Show/Hide Date inputs
+    document.getElementById("grpDateFa").style.display = lang === 'fa' ? 'block' : 'none';
+    document.getElementById("grpDateEn").style.display = lang === 'en' ? 'block' : 'none';
+
+    // Update placeholders
+    const updatePlaceholder = (id, text) => {
+      const opt = document.getElementById(id).querySelector('option[value=""]');
+      if (opt) opt.innerText = text;
+    };
+
+    updatePlaceholder("jYear", t.year); updatePlaceholder("jMonth", t.month); updatePlaceholder("jDay", t.day);
+    updatePlaceholder("gYear", t.year); updatePlaceholder("gMonth", t.month); updatePlaceholder("gDay", t.day);
+    
+    // Update month names
+    for(let i=1; i<=12; i++) {
+      let optFa = document.getElementById("jMonth").querySelector(`option[value="${i}"]`);
+      if (optFa) optFa.innerText = texts.fa.months[i-1];
+      let optEn = document.getElementById("gMonth").querySelector(`option[value="${i}"]`);
+      if (optEn) optEn.innerText = texts.en.months[i-1];
+    }
+
+
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+    
+    const todayISO = getTodayISO();
+    const searchQuery = document.getElementById("searchInput").value.toLowerCase(); 
+
+    // 💡 منطق جدید مرتب‌سازی
+    const filtered = tasks.filter(task => {
+      let statusMatch = true;
+      if(filter === 'active') statusMatch = !task.done;
+      if(filter === 'completed') statusMatch = task.done;
+
+      let searchMatch = true;
+      if (searchQuery) {
+          searchMatch = task.title.toLowerCase().includes(searchQuery);
+      }
+      
+      return statusMatch && searchMatch;
+    }).sort((a, b) => {
+        // 1. Completed tasks go last
+        if (a.done !== b.done) {
+            return a.done ? 1 : -1;
+        }
+
+        // 2. Manual Order takes precedence (if defined)
+        if (a.order !== undefined && b.order !== undefined && a.order !== b.order) {
+            return a.order - b.order; // Ascending order (smaller number = higher priority)
+        }
+
+        // 3. Date sorting (closest date first) as fallback
+        if (a.date && b.date) {
+            // Sort by closest date (DESC)
+            return new Date(b.date) - new Date(a.date);
+        }
+        
+        // 4. Default by ID (newest task first)
+        return b.id - a.id; 
+    });
+
+    filtered.forEach(task => {
+      const li = document.createElement("li");
+      
+      // 💡 افزودن ویژگی‌های Drag-and-Drop و data-id
+      li.className = `task glass ${task.done ? 'done' : ''}`;
+      li.setAttribute("draggable", !task.done ? "true" : "false"); 
+      li.dataset.id = task.id; 
+      
+      let displayDate = "";
+      let badgeHTML = ""; 
+
+      if(task.date) {
+        const dateParts = task.date.split("-").map(part => parseInt(part));
+        const [y,m,d] = dateParts; 
+
+        if (!task.done) { 
+            if (task.date === todayISO) {
+                badgeHTML = `<div class="status-badge badge-today">${t.alertToday}</div>`;
+            } else if (task.date < todayISO) {
+                badgeHTML = `<div class="status-badge badge-late">${t.alertLate}</div>`;
+            }
+        }
+
+        if(lang === 'fa') {
+          try {
+            const [jy, jm, jd] = toJalali(y, m, d);
+            
+            if (jy === 0 && jm === 0 && jd === 0) {
+                 displayDate = "تاریخ نامعتبر";
+            } else {
+                let monthName = "تاریخ نامعتبر"; 
+                if (jm >= 1 && jm <= 12) {
+                    monthName = texts.fa.months[jm - 1];
+                }
+                
+                displayDate = `${jd} ${monthName} ${jy}`;
+            }
+            
+          } catch(e) {
+             displayDate = "تاریخ نامعتبر"; 
+          }
+        } else {
+          try {
+            let monthName = "Invalid Date";
+            if (m >= 1 && m <= 12) {
+                monthName = texts.en.months[m - 1];
+            }
+            displayDate = `${monthName} ${d}, ${y}`;
+            
+          } catch(e) {
+             displayDate = "Invalid Date"; 
+          }
+        }
+      }
+
+
+      const catName = t.cats[task.category];
+      const catClass = task.category === 'wishlist' ? 'cat-wishlist' : '';
+
+      li.innerHTML = `
+        ${badgeHTML}
+        <div class="task-content">
+          <span class="task-title">${task.title}</span>
+          <div class="task-meta">
+             <span class="${catClass}">📂 ${catName}</span>
+             ${displayDate ? `<span>📅 ${displayDate}</span>` : ''}
+             ${task.time ? `<span>⏰ ${task.time}</span>` : ''}
+          </div>
+        </div>
+        <div class="actions">
+           <button class="btn-icon btn-edit" onclick="openModal(${task.id})">✏️</button>
+           <button class="btn-icon ${task.done ? 'btn-undo' : 'btn-done'}" onclick="toggle(${task.id})">
+             ${task.done ? '↩️' : '✔'}
+           </button>
+           <button class="btn-icon btn-del" onclick="del(${task.id})">🗑</button>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+    
+    // 💡 اتصال شنونده‌های رویداد Drag-and-Drop پس از ساخت لیست
+    attachDragEventListeners();
+  }
+
+  function openModal(id) {
+    editId = id;
+    const modal = document.getElementById("taskModal");
+    modal.style.display = "flex";
+    const title = document.getElementById("modalTitle");
+    
+    if(id) {
+      const task = tasks.find(t => t.id === id);
+      title.innerText = texts[lang].modalEdit;
+      document.getElementById("inpTitle").value = task.title;
+      document.getElementById("inpCat").value = task.category;
+      document.getElementById("inpTime").value = task.time;
+      
+      initSelectors(task); 
+      
+    } else {
+      title.innerText = texts[lang].modalAdd;
+      document.getElementById("inpTitle").value = "";
+      document.getElementById("inpTime").value = "";
+      document.getElementById("inpCat").value = "work"; 
+      initSelectors(null); 
+    }
+    updateFieldDescriptions(lang); 
+  }
+
+  function save() {
+        const title = document.getElementById("inpTitle").value.trim();
+        const t = texts[lang]; 
+        
+        if(!title) {
+            alert(t.alertEmptyTitle);
+            return;
+        }
+        
+        const cat = document.getElementById("inpCat").value;
+        const time = document.getElementById("inpTime").value || ""; 
+        let finalDate = "";
+
+        // Date Parsing Logic (Unchanged)
+        if(lang === 'fa') {
+          const y = document.getElementById("jYear").value.trim();
+          const m = document.getElementById("jMonth").value.trim();
+          const d = document.getElementById("jDay").value.trim();
+          
+          if (y && m && d) {
+              const parsedY = parseInt(y), parsedM = parseInt(m), parsedD = parseInt(d);
+
+              const daysInMonth = getJalaliMonthDays(parsedY, parsedM);
+              if (parsedD < 1 || parsedD > daysInMonth) {
+                  alert(`روز انتخاب شده (${parsedD}) برای ماه ${texts.fa.months[parsedM-1]} سال ${parsedY} نامعتبر است. لطفاً تاریخ را اصلاح کنید.`);
+                  return; 
+              }
+              
+              const [gY, gM, gD] = toGregorian_aux(parsedY, parsedM, parsedD);
+              if (gY === 0) {
+                 alert("تاریخ انتخاب شده نامعتبر است. لطفا بررسی کنید.");
+                 return;
+              }
+              finalDate = `${gY}-${String(gM).padStart(2,'0')}-${String(gD).padStart(2,'0')}`; 
+              
+          } else {
+              finalDate = "";
+          } 
+
+        } else { // lang is 'en' (Gregorian)
+            const gY = document.getElementById("gYear").value.trim();
+            const gM = document.getElementById("gMonth").value.trim();
+            const gD = document.getElementById("gDay").value.trim();
+
+            if (gY && gM && gD) {
+                const parsedY = parseInt(gY), parsedM = parseInt(gM), parsedD = parseInt(gD);
+
+                const daysInMonth = getGregorianMonthDays(parsedY, parsedM);
+                if (parsedD < 1 || parsedD > daysInMonth) {
+                    alert(`Selected day (${parsedD}) is invalid for ${texts.en.months[parsedM-1]} ${parsedY}. Please correct the date.`);
+                    return; 
+                }
+
+                finalDate = `${parsedY}-${String(parsedM).padStart(2,'0')}-${String(parsedD).padStart(2,'0')}`;
+            } else {
+                finalDate = "";
+            }
+        }
+
+        
+        if(editId) {
+          const taskToUpdate = tasks.find(x => x.id === editId);
+          taskToUpdate.title = title; 
+          taskToUpdate.category = cat; 
+          taskToUpdate.date = finalDate; 
+          taskToUpdate.time = time;
+        } else {
+          // 💡 تنظیم یک order جدید (بزرگتر از همه) برای تسک جدید تا در انتهای لیست قرار گیرد
+          const newOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.order)) + 1 : 0;
+          tasks.push({ id: Date.now(), title, category: cat, date: finalDate, time, done: false, order: newOrder });
+        }
+        
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+        document.getElementById("taskModal").style.display = "none";
+        render();
+
+  }
+
+
+  // Events
+  document.getElementById("fabAdd").onclick = () => openModal(null);
+  document.getElementById("btnCancel").onclick = () => document.getElementById("taskModal").style.display="none";
+  document.getElementById("btnSave").onclick = save;
+  
+  // Dynamic Update Events for Calendars
+  document.getElementById("jYear").onchange = updateJalaliDays;
+  document.getElementById("jMonth").onchange = updateJalaliDays;
+  document.getElementById("jDay").onchange = updateGregorianFromJalali; 
+
+  document.getElementById("gYear").onchange = updateGregorianDays;
+  document.getElementById("gMonth").onchange = updateGregorianDays;
+  document.getElementById("gDay").onchange = updateJalaliFromGregorian; 
+
+
+  document.getElementById("langBtn").onclick = () => {
+    lang = lang === 'fa' ? 'en' : 'fa';
+    localStorage.setItem("lang", lang);
+    const modalOpen = document.getElementById("taskModal").style.display === "flex";
+    if (modalOpen) {
+        openModal(editId); 
+    }
+    render();
+  };
+  document.getElementById("modeBtn").onclick = () => {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("dark", document.body.classList.contains("dark-mode"));
+  };
+  
+  // Filter clicks
+  ['All','Active','Done'].forEach(k => {
+      document.getElementById(`f${k}`).onclick = function() {
+          document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+          this.classList.add("active");
+          filter = this.dataset.filter;
+          render();
+      }
+  });
+
+  window.toggle = (id) => {
+    const t = tasks.find(x=>x.id===id); t.done = !t.done;
+    
+    // 💡 تنظیم مجدد order پس از انجام شدن یا نشدن
+    if (t.done) {
+        // به انتهای لیست می‌فرستد (یک عدد بزرگ)
+        t.order = tasks.length + t.id; 
+    } else {
+        // به ابتدای لیست می‌آورد (یک عدد کوچک)
+        t.order = 0;
+        // و نیاز به به‌روزرسانی سایر orderها برای جایگیری درست است
+        updateTaskOrder(); 
+    }
+    
+    localStorage.setItem("tasks", JSON.stringify(tasks)); 
+    render();
+  };
+  window.del = (id) => {
+    if(confirm(texts[lang].confirm)) {
+       tasks = tasks.filter(x=>x.id!==id);
+       localStorage.setItem("tasks", JSON.stringify(tasks)); 
+       // به‌روزرسانی order پس از حذف
+       updateTaskOrder(); 
+    }
+  };
+
+  // Start
+  if(localStorage.getItem("dark") === "true") document.body.classList.add("dark-mode");
+  render();
+
+</script>
+</body>
+</html>
