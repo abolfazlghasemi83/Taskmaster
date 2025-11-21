@@ -73,7 +73,7 @@
         background: rgba(255,255,255,0.5);
     }
     
-    /* Search Bar */
+ 
     .search-bar {
         max-width: 800px; margin: 0 auto 20px auto; width: 90%;
     }
@@ -93,7 +93,7 @@
     }
     
 
-    /* Filter Bar */
+    
     .filters {
       display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;
     }
@@ -120,7 +120,7 @@
     li.task.done { opacity: 0.6; filter: grayscale(0.8); }
     li.task.done .task-title { text-decoration: line-through; }
     
-    /* 💡 استایل‌های جدید برای Drag-and-Drop */
+   
     li.task[draggable="true"]:hover {
         cursor: grab;
     }
@@ -144,7 +144,7 @@
     }
     .task-meta { font-size: 0.85rem; opacity: 0.7; display: flex; gap: 10px; flex-wrap: wrap; }
     
-    /* Category Specific Style */
+    
     .cat-wishlist { 
         color: #9b59b6; 
         font-weight: bold;
@@ -161,7 +161,7 @@
     .btn-edit { background: #0984e3; }
     .btn-del { background: #d63030; }
 
-    /* Smart Alerts */
+   
     .status-badge {
       position: absolute; top: -10px; right: 20px;
       padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; color: white;
@@ -184,11 +184,11 @@
     }
     .fab:hover { transform: scale(1.1); }
     
-    /* FAB Positioning based on Language */
+   
     html[dir="rtl"] .fab { right: 30px; left: auto; } 
     html[dir="ltr"] .fab { left: 30px; right: auto; } 
 
-    /* Modal */
+ 
     .modal {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
       align-items: center; justify-content: center; z-index: 200;
@@ -201,7 +201,7 @@
       padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1);
       background: rgba(255,255,255,0.8); font-family: inherit; width: 100%; box-sizing: border-box;
     }
-    /* 💡 استایل برای راهنمای فیلدها */
+   
     .field-desc {
         font-size: 0.75rem; 
         opacity: 0.6; 
@@ -293,7 +293,7 @@
 <script>
   let lang = localStorage.getItem("lang") || "fa";
   
-  // 💡 اضافه کردن فیلد order به تسک‌های موجود هنگام بارگذاری
+
   let tasks = JSON.parse(localStorage.getItem("tasks") || "[]").map((task, index) => {
       if (task.order === undefined) {
           task.order = index; 
@@ -468,7 +468,7 @@
       return 31;
   }
   
-  /* --- Gregorian/Jalali Synchronization (Unchanged) --- */
+  
 
   function updateJalaliFromGregorian() {
       const gY = document.getElementById("gYear").value.trim();
@@ -610,8 +610,6 @@
       if(shouldUpdateGregorian) updateGregorianFromJalali(true);
   }
 
-  /* --- DRAG & DROP LOGIC --- */
-
   function handleDragStart(e) {
     if (e.target.classList.contains('done')) {
         e.preventDefault();
@@ -621,23 +619,23 @@
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', this.dataset.id); 
 
-    // Add class for visual feedback
+   
     setTimeout(() => this.style.opacity = '0.4', 0);
   }
 
   function handleDragEnd(e) {
       this.style.opacity = '1';
       draggedItem = null;
-      // Remove all highlight classes
+      
       document.querySelectorAll('.task').forEach(t => t.classList.remove('drag-over-top', 'drag-over-bottom'));
   }
 
   function handleDragOver(e) {
-      e.preventDefault(); // Necessary to allow drop
+      e.preventDefault(); 
       const targetTaskLi = e.target.closest('.task');
       if (!targetTaskLi || targetTaskLi === draggedItem || targetTaskLi.classList.contains('done')) return;
       
-      // Determine whether to place above or below based on mouse position
+      
       const rect = targetTaskLi.getBoundingClientRect();
       const offset = e.clientY - rect.top;
       const isBefore = offset < rect.height / 2;
@@ -664,43 +662,43 @@
           
           const list = document.getElementById('taskList');
           
-          // Reorder the DOM elements visually
+         
           if (isBefore) {
               list.insertBefore(draggedItem, dropTargetLi);
           } else {
               list.insertBefore(draggedItem, dropTargetLi.nextSibling);
           }
 
-          // 💡 Call function to update the order in the 'tasks' array and save
+        
           updateTaskOrder();
       }
   }
 
   function updateTaskOrder() {
       const taskList = document.getElementById("taskList");
-      // Get only the actively rendered tasks (which are now manually ordered)
+      
       const taskElements = Array.from(taskList.children).filter(el => el.classList.contains('task'));
       const taskIdToOrderMap = {};
       
-      // Map IDs of visible (and now reordered) tasks to their new index
+      
       taskElements.forEach((el, index) => {
           const taskId = parseInt(el.dataset.id);
           taskIdToOrderMap[taskId] = index;
       });
 
-      // Update the 'order' property in the global tasks array
+      
       tasks = tasks.map(task => {
           if (taskIdToOrderMap[task.id] !== undefined) {
-              // Set the new manual order
+            
               task.order = taskIdToOrderMap[task.id];
           } else if (task.done) {
-              // Ensure done tasks also get a high order to stay at the bottom
+            
               task.order = tasks.length + task.id; 
           }
           return task;
       });
 
-      // Save and re-render to ensure all list elements are consistent
+      
       localStorage.setItem("tasks", JSON.stringify(tasks));
       render(); 
   }
@@ -714,14 +712,14 @@
               task.addEventListener('dragstart', handleDragStart);
               task.addEventListener('dragend', handleDragEnd);
           }
-          // The drop target listeners must be on all tasks (even non-draggable ones)
+          
           task.addEventListener('dragover', handleDragOver);
           task.addEventListener('dragleave', (e) => e.target.closest('.task').classList.remove('drag-over-top', 'drag-over-bottom'));
           task.addEventListener('drop', handleDrop);
       });
   }
 
-  /* --- CORE LOGIC --- */
+  
   
   function updateFieldDescriptions(currentLang) {
     const t = texts[currentLang];
@@ -746,7 +744,7 @@
     const today = new Date();
     const currentGYear = today.getFullYear();
     
-    // 1. Jalali Selectors setup
+    
     const jYSel = document.getElementById("jYear");
     const jMSel = document.getElementById("jMonth");
     
@@ -784,7 +782,7 @@
         }
     }
 
-    // 3. Set Initial Values or Edit Values
+    
     const selectors = ["jYear", "jMonth", "jDay", "gYear", "gMonth", "gDay"];
     selectors.forEach(id => {
         const sel = document.getElementById(id);
@@ -806,7 +804,7 @@
             document.getElementById("gDay").value = gD; 
             
         } catch(e) {
-             // If date is invalid, just clear
+             
         }
     } 
     
@@ -832,17 +830,17 @@
     
     updateFieldDescriptions(lang); 
 
-    // Fill Category
+    
     const catSel = document.getElementById("inpCat");
     const oldVal = catSel.value;
     catSel.innerHTML = Object.keys(t.cats).map(k => `<option value="${k}">${t.cats[k]}</option>`).join("");
     if(oldVal) catSel.value = oldVal;
 
-    // Show/Hide Date inputs
+   
     document.getElementById("grpDateFa").style.display = lang === 'fa' ? 'block' : 'none';
     document.getElementById("grpDateEn").style.display = lang === 'en' ? 'block' : 'none';
 
-    // Update placeholders
+   
     const updatePlaceholder = (id, text) => {
       const opt = document.getElementById(id).querySelector('option[value=""]');
       if (opt) opt.innerText = text;
@@ -851,7 +849,7 @@
     updatePlaceholder("jYear", t.year); updatePlaceholder("jMonth", t.month); updatePlaceholder("jDay", t.day);
     updatePlaceholder("gYear", t.year); updatePlaceholder("gMonth", t.month); updatePlaceholder("gDay", t.day);
     
-    // Update month names
+    
     for(let i=1; i<=12; i++) {
       let optFa = document.getElementById("jMonth").querySelector(`option[value="${i}"]`);
       if (optFa) optFa.innerText = texts.fa.months[i-1];
@@ -866,7 +864,7 @@
     const todayISO = getTodayISO();
     const searchQuery = document.getElementById("searchInput").value.toLowerCase(); 
 
-    // 💡 منطق جدید مرتب‌سازی
+    
     const filtered = tasks.filter(task => {
       let statusMatch = true;
       if(filter === 'active') statusMatch = !task.done;
@@ -879,17 +877,15 @@
       
       return statusMatch && searchMatch;
     }).sort((a, b) => {
-        // 1. Completed tasks go last
+     
         if (a.done !== b.done) {
             return a.done ? 1 : -1;
         }
 
-        // 2. Manual Order takes precedence (if defined)
+        
         if (a.order !== undefined && b.order !== undefined && a.order !== b.order) {
             return a.order - b.order; // Ascending order (smaller number = higher priority)
         }
-
-        // 3. Date sorting (closest date first) as fallback
         if (a.date && b.date) {
             // Sort by closest date (DESC)
             return new Date(b.date) - new Date(a.date);
@@ -902,7 +898,7 @@
     filtered.forEach(task => {
       const li = document.createElement("li");
       
-      // 💡 افزودن ویژگی‌های Drag-and-Drop و data-id
+   
       li.className = `task glass ${task.done ? 'done' : ''}`;
       li.setAttribute("draggable", !task.done ? "true" : "false"); 
       li.dataset.id = task.id; 
@@ -979,7 +975,7 @@
       list.appendChild(li);
     });
     
-    // 💡 اتصال شنونده‌های رویداد Drag-and-Drop پس از ساخت لیست
+   
     attachDragEventListeners();
   }
 
@@ -1075,7 +1071,7 @@
           taskToUpdate.date = finalDate; 
           taskToUpdate.time = time;
         } else {
-          // 💡 تنظیم یک order جدید (بزرگتر از همه) برای تسک جدید تا در انتهای لیست قرار گیرد
+        
           const newOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.order)) + 1 : 0;
           tasks.push({ id: Date.now(), title, category: cat, date: finalDate, time, done: false, order: newOrder });
         }
@@ -1129,14 +1125,14 @@
   window.toggle = (id) => {
     const t = tasks.find(x=>x.id===id); t.done = !t.done;
     
-    // 💡 تنظیم مجدد order پس از انجام شدن یا نشدن
+    
     if (t.done) {
-        // به انتهای لیست می‌فرستد (یک عدد بزرگ)
+        
         t.order = tasks.length + t.id; 
     } else {
-        // به ابتدای لیست می‌آورد (یک عدد کوچک)
+     
         t.order = 0;
-        // و نیاز به به‌روزرسانی سایر orderها برای جایگیری درست است
+        
         updateTaskOrder(); 
     }
     
@@ -1147,12 +1143,12 @@
     if(confirm(texts[lang].confirm)) {
        tasks = tasks.filter(x=>x.id!==id);
        localStorage.setItem("tasks", JSON.stringify(tasks)); 
-       // به‌روزرسانی order پس از حذف
+     
        updateTaskOrder(); 
     }
   };
 
-  // Start
+
   if(localStorage.getItem("dark") === "true") document.body.classList.add("dark-mode");
   render();
 
@@ -1160,3 +1156,4 @@
 </body>
 
 </html>
+
