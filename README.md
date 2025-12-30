@@ -6,7 +6,7 @@ An extremely lightweight, bilingual (FA/EN) task management application built to
 
 ### 🚀 About the Project
 
-**Karastan** is a simple, fast, and responsive To-Do List application built with pure **Vanilla JavaScript**. It was initially developed for **personal use** (🙂) to create a reliable and localized solution for managing tasks based on the Persian calendar.
+**Karastan** is a simple, fast, and responsive To-Do List application built with pure **Vanilla JavaScript**. It was initially developed for **personal use** to create a reliable and localized solution for managing tasks based on the Persian calendar.
 
 The entire application is designed for extreme efficiency: the full codebase (HTML/CSS/JS) **is less than 50 KB**, ensuring lightning-fast load times with zero dependency on large, complex frameworks.
 
